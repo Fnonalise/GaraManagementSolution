@@ -149,6 +149,112 @@ VALUES (N'Thay dầu', 150000),
        (N'Bảo dưỡng cơ bản', 300000);
 GO
 
-USE GaraDb;
-INSERT INTO Customers(FullName, Phone, Address) VALUES(N'Test', '000', N'Test');
-SELECT * FROM Customers;
+GO
+
+-- Kiểm tra và tạo bảng Users nếu chưa tồn tại
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type in (N'U'))
+BEGIN
+    PRINT 'Đang tạo bảng Users...'
+    
+    CREATE TABLE [dbo].[Users](
+        [UserId] [int] IDENTITY(1,1) NOT NULL,
+        [Username] [nvarchar](50) NOT NULL,
+        [Password] [nvarchar](255) NOT NULL,
+        [FullName] [nvarchar](200) NULL,
+        [Role] [nvarchar](20) NOT NULL CONSTRAINT [DF_Users_Role] DEFAULT ('User'),
+        [IsActive] [bit] NOT NULL CONSTRAINT [DF_Users_IsActive] DEFAULT (1),
+        [CreatedDate] [datetime] NOT NULL CONSTRAINT [DF_Users_CreatedDate] DEFAULT (GETDATE()),
+        CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED ([UserId] ASC)
+    )
+    
+    PRINT 'Đã tạo bảng Users thành công!'
+END
+ELSE
+BEGIN
+    PRINT 'Bảng Users đã tồn tại.'
+END
+GO
+
+-- Tạo unique constraint cho Username
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Users_Username' AND object_id = OBJECT_ID('Users'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_Users_Username] ON [dbo].[Users]
+    (
+        [Username] ASC
+    )
+    PRINT 'Đã tạo unique index cho Username.'
+END
+GO
+
+-- Thêm tài khoản Admin mặc định
+-- Username: admin
+-- Password: admin123 (Hash SHA256: jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=)
+IF NOT EXISTS (SELECT * FROM Users WHERE Username = 'admin')
+BEGIN
+    INSERT INTO [dbo].[Users] ([Username], [Password], [FullName], [Role], [IsActive], [CreatedDate])
+    VALUES (
+        'admin',
+        'jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=',
+        N'Quản trị viên',
+        'Admin',
+        1,
+        GETDATE()
+    )
+    PRINT 'Đã tạo tài khoản Admin.'
+END
+ELSE
+BEGIN
+    PRINT 'Tài khoản admin đã tồn tại.'
+END
+GO
+
+-- Thêm tài khoản User mẫu
+-- Username: user1
+-- Password: user123 (Hash SHA256: BPiZbadjt6lpsQKO4wB1aerzpjVIbdqyEdUSyFud+Ps=)
+IF NOT EXISTS (SELECT * FROM Users WHERE Username = 'user1')
+BEGIN
+    INSERT INTO [dbo].[Users] ([Username], [Password], [FullName], [Role], [IsActive], [CreatedDate])
+    VALUES (
+        'user1',
+        'BPiZbadjt6lpsQKO4wB1aerzpjVIbdqyEdUSyFud+Ps=',
+        N'Nhân viên 1',
+        'User',
+        1,
+        GETDATE()
+    )
+    PRINT 'Đã tạo tài khoản User mẫu.'
+END
+ELSE
+BEGIN
+    PRINT 'Tài khoản user1 đã tồn tại.'
+END
+GO
+
+-- Hiển thị danh sách tài khoản đã tạo
+PRINT ''
+PRINT '============================================'
+PRINT 'DANH SÁCH TÀI KHOẢN TRONG HỆ THỐNG:'
+PRINT '============================================'
+SELECT 
+    UserId as [ID],
+    Username as [Tên đăng nhập],
+    FullName as [Họ tên],
+    Role as [Vai trò],
+    CASE WHEN IsActive = 1 THEN N'Kích hoạt' ELSE N'Khóa' END as [Trạng thái],
+    CONVERT(varchar, CreatedDate, 103) as [Ngày tạo]
+FROM Users
+ORDER BY UserId
+GO
+
+PRINT ''
+PRINT '============================================'
+PRINT 'HOÀN TẤT! BẠN CÓ THỂ ĐĂNG NHẬP VỚI:'
+PRINT '============================================'
+PRINT 'Tài khoản Admin:'
+PRINT '  Username: admin'
+PRINT '  Password: admin123'
+PRINT ''
+PRINT 'Tài khoản User:'
+PRINT '  Username: user1'
+PRINT '  Password: user123'
+PRINT '============================================'

@@ -14,6 +14,7 @@ namespace GaraApp.DAL
         public DbSet<RepairOrder> RepairOrders => Set<RepairOrder>();
         public DbSet<RepairServiceDetail> RepairServiceDetails => Set<RepairServiceDetail>();
         public DbSet<RepairPartDetail> RepairPartDetails => Set<RepairPartDetail>();
+        public DbSet<User> Users => Set<User>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +27,22 @@ namespace GaraApp.DAL
 
             modelBuilder.Entity<Car>()
                 .Property(x => x.LicensePlate).HasMaxLength(20);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.Username).HasMaxLength(50).IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.Password).HasMaxLength(255).IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.FullName).HasMaxLength(200);
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.Role).HasMaxLength(20).HasDefaultValue("User");
 
             // decimal precision
             modelBuilder.Entity<Part>().Property(x => x.UnitPrice).HasPrecision(18, 2);

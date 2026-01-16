@@ -18,6 +18,9 @@ namespace GaraApp.UI
             InitializeComponent();
 
             IsMdiContainer = true;
+            
+            // Hiển thị thông tin người dùng đã đăng nhập
+            this.Text = $"Hệ thống quản lý Gara - Người dùng: {frmLogin.LoggedInFullName} ({frmLogin.LoggedInRole})";
         }
 
         // Thoát
