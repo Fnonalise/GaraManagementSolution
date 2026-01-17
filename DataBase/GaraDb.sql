@@ -258,3 +258,54 @@ PRINT 'Tài khoản User:'
 PRINT '  Username: user1'
 PRINT '  Password: user123'
 PRINT '============================================'
+
+GO
+
+-- Xóa dữ liệu cũ
+DELETE FROM Users
+GO
+
+-- Thêm tài khoản admin với hash đúng (từ debug info)
+-- Username: admin
+-- Password: admin123
+-- Hash: JAvIGPq9JyTdtvBO6x2lInRI1+gxwIyPqCkAn3THlkk=
+INSERT INTO [dbo].[Users] ([Username], [Password], [FullName], [Role], [IsActive], [CreatedDate])
+VALUES (
+    'admin',
+    'JAvIGPq9JyTdtvBO6x2lInRI1+gxwIyPqCkAn3THlkk=',
+    N'Quản trị viên',
+    'Admin',
+    1,
+    GETDATE()
+)
+GO
+
+PRINT 'Đã tạo tài khoản admin với hash mới.'
+GO
+
+-- Tạo hash cho user123 và thêm tài khoản user1
+-- Tạm thời comment dòng này, chỉ dùng admin trước
+-- Sau khi admin login thành công, ta sẽ tạo user1
+
+-- Hiển thị kết quả
+PRINT ''
+PRINT '============================================'
+PRINT 'TÀI KHOẢN ĐÃ TẠO:'
+PRINT '============================================'
+SELECT 
+    UserId as [ID],
+    Username as [Username],
+    FullName as [Full Name],
+    Role as [Role],
+    CASE WHEN IsActive = 1 THEN 'Active' ELSE 'Inactive' END as [Status],
+    LEFT(Password, 50) as [Password Hash]
+FROM Users
+ORDER BY UserId
+GO
+
+PRINT ''
+PRINT '============================================'
+PRINT 'ĐĂNG NHẬP VỚI:'
+PRINT 'Username: admin'
+PRINT 'Password: admin123'
+PRINT '============================================'
